@@ -88,4 +88,37 @@ public class GalleryAdapter extends ArrayAdapter<String> implements AbsListView.
         }
 
     }
+
+    /**
+     *  加载Bitmap对象
+     * @param mFirstVisibleItem
+     * @param mVisibleItemCount
+     */
+    private void loadBitmaps(int mFirstVisibleItem, int mVisibleItemCount) {
+        for(int i=mFirstVisibleItem; i < (mFirstVisibleItem + mVisibleItemCount); i++){
+            String imageUrl = Images.images[i];
+            Bitmap bitmap = LruCacheUtils.getBitmapFromCache(imageUrl);
+            if(bitmap == null){
+                BitmapTask bitmapTask = new BitmapTask();
+                mBitmapTasks.add(bitmapTask);
+                bitmapTask.execute(imageUrl);
+            }else{
+                ImageView imageView = (ImageView) mGridView.findViewWithTag(imageUrl);
+                if(imageView != null && bitmap != null){
+                    imageView.setImageBitmap(bitmap);
+                }
+            }
+        }
+    }
+
+    /**
+     * 取消正在下载或者等待下载的任务
+     */
+    private void cancelAllTasks() {
+        if(mBitmapTasks != null){
+            for (BitmapTask bitmapTask : mBitmapTasks){
+                bitmapTask.cancel(false);
+            }
+        }
+    }
 }
